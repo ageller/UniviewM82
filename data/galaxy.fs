@@ -2,6 +2,7 @@ uniform float uv_fade;
 uniform float userAlpha;
 uniform float vMax;
 uniform float vMin;
+uniform float highVAlpha;
 
 uniform sampler2D cmap;
 
@@ -14,9 +15,13 @@ out vec4 fragColor;
 void main()
 {
 
-	vec2 cPos = vec2( clamp((velocityMag - vMin)/(vMax - vMin), 0.01, 0.99), 0.5)
+	vec2 cPos = vec2( clamp((velocityMag - vMin)/(vMax - vMin), 0.01, 0.99), 0.5);
     vec4 color = texture2D( cmap, cPos );
 
+	float alpha = userAlpha;
+	if (velocityMag >= vMax){
+		alpha = highVAlpha;
+	}
 	fragColor = vec4(color.rgb, 1.);
 	fragColor.a *= uv_fade*userAlpha;
 	vec2 fromCenter = texcoord * 2 - vec2(1);

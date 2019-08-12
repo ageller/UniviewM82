@@ -12,6 +12,9 @@ uniform float userRotationX;
 uniform float userRotationY;
 uniform float userRotationZ;
 
+uniform float vMax;
+uniform float highVPsize;
+
 out vec2 texcoord;
 out float velocityMag;
 
@@ -61,7 +64,11 @@ void main()
 	mat3 rotY = rotationMatrix(vec3(0,1,0), userRotationY);
 	mat3 rotZ = rotationMatrix(vec3(0,0,1), userRotationZ);
 	
-	drawSprite(vec4(rotX*rotY*rotZ*pos, 1.), userPsize, 0);
+	float size = userPsize;
+	if (velocityMag >= vMax){
+		size = highVPsize;
+	}
+	drawSprite(vec4(rotX*rotY*rotZ*pos, 1.), size, 0);
 	
 	
 
