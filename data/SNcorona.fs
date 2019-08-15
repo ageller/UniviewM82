@@ -9,6 +9,7 @@ uniform float dpow;
 uniform float dfac;
 
 in vec2 texcoord;
+in float rad;
 
 out vec4 fragColor;
 
@@ -71,6 +72,10 @@ float noise(vec3 position, int octaves, float frequency, float persistence, int 
 
 void main()
 {
+
+	//fade factor (the luminosity peaks at about 0.1)
+	float SNfade = rad*10;
+
 	fragColor = vec4(1.);
 	
 	vec2 fromCenter = texcoord * 2 - vec2(1);
@@ -99,7 +104,7 @@ void main()
 	fragColor.rgb = vec3(mix(vec3(1.0), fragColor.rgb, clamp(pow(dist, 0.2) ,0. , 1.)));
 	fragColor.a = (1.0 - pow(dist+dlim, dpow));
 	
-	fragColor.a *= alpha*userAlpha;
+	fragColor.a *= alpha*userAlpha*SNfade;
 
 
 
