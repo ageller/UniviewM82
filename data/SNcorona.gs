@@ -6,6 +6,7 @@ uniform mat4 uv_modelViewInverseMatrix;
 
 uniform sampler2D stateTexture;
 uniform float radScale;
+uniform vec3 offset;
 
 out vec2 texcoord;
 out float lum;
@@ -60,10 +61,11 @@ void main()
 	float eventTime = texture(stateTexture, vec2(0.5)).r;
 
 	//these values fit the data relatively well (see my notebook in rawdata)
-	lum = SNIaLum(eventTime, 1., -2., 13., 0.1, -2.2, 0.6);
-	float rad = radScale*lum;
+	//lum = SNIaLum(eventTime, 1., -2., 13., 0.1, -2.2, 0.6);
+	lum = SNIaLum(eventTime, 1., 0., 15., 0.1, -2.2, 0.6);
+	float rad = radScale*0.001*eventTime;
 
-	drawSprite(vec4(gl_in[0].gl_Position.xyz, 1.), rad, 0);
+	drawSprite(vec4(gl_in[0].gl_Position.xyz + offset, 1.), rad, 0);
 
 
 }
