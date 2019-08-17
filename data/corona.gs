@@ -4,11 +4,15 @@ layout(triangle_strip, max_vertices = 4) out;
 uniform mat4 uv_modelViewProjectionMatrix;
 uniform mat4 uv_modelViewInverseMatrix;
 
+
 uniform sampler2D stateTexture;
-uniform float radScale;
+
+//uniform float eventTime;
+uniform float coronaRad;
+uniform float coronaEndTime;
 
 out vec2 texcoord;
-out float lum;
+
 
 // axis should be normalized
 mat3 rotationMatrix(vec3 axis, float angle)
@@ -20,15 +24,6 @@ mat3 rotationMatrix(vec3 axis, float angle)
 	return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
 				oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
 				oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
-}
-
-// Equation 7 from [this paper](https://arxiv.org/abs/1612.02097)
-float SNIaLum(float t, float A, float t0, float tb, float a1, float a2, float s)
-{
-	float ar = 2.*(a1 + 1.);
-	float ad = a1 - a2;
-	float tfac = (t - t0)/tb;
-	return A * pow(tfac,ar) * pow( 1. + pow(tfac,(s*ad)), -2./s );
 }
 
 void drawSprite(vec4 position, float radius, float rotation)
@@ -56,14 +51,12 @@ void drawSprite(vec4 position, float radius, float rotation)
 
 void main()
 {
-	//this will eventually change to an input file for the light curve
+
 	float eventTime = texture(stateTexture, vec2(0.5)).r;
-
-	//these values fit the data relatively well (see my notebook in rawdata)
-	lum = SNIaLum(eventTime, 1., -2., 13., 0.1, -2.2, 0.6);
-	float rad = radScale*lum;
-
-	drawSprite(vec4(gl_in[0].gl_Position.xyz, 1.), rad, 0);
+	if (eventTime <= coronaEndTime){
+		float rad = coronaRad*clamp(coronaEndTime - eventTime, 0, 1);
+		drawSprite(vec4(gl_in[0].gl_Position.xyz, 1.), rad, 0);
+	}
 
 
 }

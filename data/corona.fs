@@ -1,15 +1,10 @@
 uniform float uv_fade;
 uniform mat4 uv_modelViewInverseMatrix;
 
-uniform float Teff;
+uniform float coronaTeff;
 uniform sampler2D bb;
-uniform float userAlpha;
-uniform float dlim;
-uniform float dpow;
-uniform float dfac;
 
 in vec2 texcoord;
-in float lum;
 
 out vec4 fragColor;
 
@@ -72,10 +67,6 @@ float noise(vec3 position, int octaves, float frequency, float persistence, int 
 
 void main()
 {
-
-	//fade factor (the luminosity peaks at about 0.1)
-	float SNfade = clamp(lum*10,0,0.9);
-
 	fragColor = vec4(1.);
 	
 	vec2 fromCenter = texcoord * 2 - vec2(1);
@@ -90,21 +81,23 @@ void main()
 	vec3 cameraPosition = (uv_modelViewInverseMatrix * vec4(0, 0, 0, 1)).xyz;
 
 	vec3 cNorm = normalize(cameraPosition);
-	vec3 pNorm = vec3(angle, 0., 1.);// + cNorm;
+	vec3 pNorm = vec3(angle, 0., 1.) + cNorm;
 
 // Offset distance with noise
-	float cn = dfac*noise(pNorm, 4, 3., 0.7, 0);
+	float cn = noise(pNorm, 4, 3., 0.7, 0);
 	float distN = dist/cn;
+
 	float alpha = 1.;
+	float dlim = 0.0005;
 	if (dist >= dlim){
-		alpha = (1.0 - pow(distN+dlim, dpow));
+		alpha = (1.0 - pow(distN+dlim, 0.1))*2.;
 	}
 	
-	fragColor.rgb = texture(bb, vec2(clamp(((Teff - 1000.)/19000.),0.,1.),0.5)).rgb * brightness;
+	fragColor.rgb = texture(bb, vec2(clamp(((coronaTeff - 1000.)/19000.),0.,1.),0.5)).rgb * brightness;
 	fragColor.rgb = vec3(mix(vec3(1.0), fragColor.rgb, clamp(pow(dist, 0.2) ,0. , 1.)));
-	fragColor.a = (1.0 - pow(dist+dlim, dpow));
+	fragColor.a = (1.0 - pow(dist+dlim, 0.1))*2.;
 	
-	fragColor.a *= alpha*userAlpha*SNfade;
+	fragColor.a *= alpha;
 
 
 
