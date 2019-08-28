@@ -57,7 +57,7 @@ void drawSprite(vec4 position, float radius, float rotation)
 
 void main()
 {
-	//this will eventually change to an input file for the light curve
+	//get the time from the texture
 	float eventTime = texture(stateTexture, vec2(0.5)).r;
 
 	//these values fit the data relatively well (see my notebook in rawdata)
