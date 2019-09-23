@@ -37,6 +37,7 @@ mat3 rotationMatrix(vec3 axis, float angle)
 }
 
 
+
 void drawSprite(vec4 position, float radius, float rotation)
 {
 	vec3 objectSpaceUp = vec3(0, 0, 1);
@@ -63,13 +64,20 @@ void drawSprite(vec4 position, float radius, float rotation)
 void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
 {
 
+	
 	texcoord = vec2(0,0);
-
 	vec3 p1 = position;
-	vec3 p2 = position + velocity*dt;
-
+	float vmag = length(velocity);
+	float fac = 1.;
+	float vlim = 1000.; //some are VERY large
+	if (vmag > vlim){
+		fac = vlim/vmag;
+		vmag = vlim;
+	}	
+	vec3 p2 = position - velocity*fac*dt;
+	
 	//I probably want a rotation so that the bottom is flat in the direction of the velocity?
-	//but is this correct?
+	//but something's wrong with this, so not using.  
 	vec3 dir = normalize(velocity);
 	float theta = acos(dir.z/length(dir));
 	float phi = atan(dir.y, dir.x);
@@ -86,7 +94,8 @@ void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p1, 1.);
 		EmitVertex();
 
-		p = vec3(p1.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
+		//p = vec3(p1.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
+		p = vec3(p1.xyz + vec3(radius*cos(angle), 0., radius*sin(angle)));
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
 		EmitVertex();
 
@@ -94,11 +103,13 @@ void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
 
 	//side
 	for (float angle=0; angle<=2.*PI; angle += deltaAngle){
-		p = vec3(p1.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
+		//p = vec3(p1.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
+		p = vec3(p1.xyz + vec3(radius*cos(angle), 0., radius*sin(angle)));
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
 		EmitVertex();
 
-		p = vec3(p2.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
+		//p = vec3(p2.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
+		p = vec3(p2.xyz + vec3(radius*cos(angle), 0., radius*sin(angle)));
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
 		EmitVertex();
 	}
@@ -108,10 +119,10 @@ void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p2, 1.);
 		EmitVertex();
 
-		p = vec3(p2.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0.));
+		//p = vec3(p2.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0.));
+		p = vec3(p2.xyz + vec3(radius*cos(angle), 0., radius*sin(angle)));
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
 		EmitVertex();
-
 	}
 
 	EndPrimitive();
@@ -135,12 +146,13 @@ void main()
 	float size = userPsize;
 	if (velocityMag >= vMax){
 		size = highVPsize;
+		colormapVar = velocityMag;
 	}
 	if ((velocityMag < vMax && !useHighV) || (velocityMag > vMax && useHighV)){
 		if (doLine){
 			drawCylinder(rotX*rotY*rotZ*pos, rotX*rotY*rotZ*vel, size, highVdt);
 		} else {
-			drawSprite(vec4(rotX*rotY*rotZ*pos, 1.), size, 0);
+			drawSprite(vec4(rotX*rotY*rotZ*pos, 1.), size*clamp((9. + gl_in[2].gl_Position.z), 3, 10)/10., 0);
 		}
 	}	
 	

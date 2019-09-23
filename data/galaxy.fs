@@ -24,6 +24,7 @@ void main()
 	float alpha = userAlpha;
 	if (velocityMag >= vMax){
 		alpha = highVAlpha;
+		//color = vec4(1,0,0, 1.);
 	}
 	fragColor = vec4(color.rgb, 1.);
 	fragColor.a *= uv_fade*alpha;

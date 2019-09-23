@@ -104,8 +104,19 @@ void main()
 	fragColor.rgb = vec3(mix(vec3(1.0), fragColor.rgb, clamp(pow(dist, 0.2) ,0. , 1.)));
 	fragColor.a = (1.0 - pow(dist+dlim, dpow));
 	
-	fragColor.a *= alpha*userAlpha*SNfade;
+	fragColor.a *= alpha*userAlpha*SNfade*SNfade;
 
+
+	//icon
+	//vec3 color = vec3(1);
+	//float alphaScale = 1.;
+	//if (dist > 1){
+	//	discard;
+	//}
+	//if (dist < 0.9 && dist > 0.1){
+	//	alphaScale = 0.3;
+	//}
+	//fragColor = vec4(color, uv_fade*alphaScale);
 
 
 }
