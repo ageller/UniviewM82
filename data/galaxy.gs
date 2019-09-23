@@ -68,6 +68,14 @@ void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
 	vec3 p1 = position;
 	vec3 p2 = position + velocity*dt;
 
+	//I probably want a rotation so that the bottom is flat in the direction of the velocity?
+	//but is this correct?
+	vec3 dir = normalize(velocity);
+	float theta = acos(dir.z/length(dir));
+	float phi = atan(dir.y, dir.x);
+	mat3 rotX = rotationMatrix(vec3(1,0,0), theta);
+	mat3 rotY = rotationMatrix(vec3(0,1,0), phi);
+
 	float Npoints = 10.;
 	float angle = 0.;
 	float deltaAngle = 2.*PI/Npoints;
@@ -78,7 +86,7 @@ void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p1, 1.);
 		EmitVertex();
 
-		p = vec3(p1.xyz + vec3(radius*cos(angle), radius*sin(angle), 0));
+		p = vec3(p1.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
 		EmitVertex();
 
@@ -86,11 +94,11 @@ void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
 
 	//side
 	for (float angle=0; angle<=2.*PI; angle += deltaAngle){
-		p = vec3(p1.xyz + vec3(radius*cos(angle), radius*sin(angle), 0));
+		p = vec3(p1.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
 		EmitVertex();
 
-		p = vec3(p2.xyz + vec3(radius*cos(angle), radius*sin(angle), 0));
+		p = vec3(p2.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0));
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
 		EmitVertex();
 	}
@@ -100,7 +108,7 @@ void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p2, 1.);
 		EmitVertex();
 
-		p = vec3(p2.xyz + vec3(radius*cos(angle), radius*sin(angle), 0.));
+		p = vec3(p2.xyz + rotX*rotY*vec3(radius*cos(angle), radius*sin(angle), 0.));
 		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
 		EmitVertex();
 
