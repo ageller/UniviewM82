@@ -1,5 +1,5 @@
 layout(triangles) in;
-layout(triangle_strip, max_vertices = 4) out;
+layout(triangle_strip, max_vertices = 256) out;
 
 uniform mat4 uv_modelViewProjectionMatrix;
 uniform mat4 uv_modelViewInverseMatrix;
@@ -14,9 +14,15 @@ uniform float userRotationZ;
 
 uniform float vMax;
 uniform float highVPsize;
+uniform float highVdt;
+uniform bool useHighV;
+uniform bool doLine;
 
 out vec2 texcoord;
 out float velocityMag;
+out float colormapVar;
+
+#define PI 3.14159265359
 
 // axis should be normalized
 mat3 rotationMatrix(vec3 axis, float angle)
@@ -54,12 +60,66 @@ void drawSprite(vec4 position, float radius, float rotation)
 	EndPrimitive();
 }
 
+void drawCylinder(vec3 position, vec3 velocity, float radius, float dt)
+{
+
+	texcoord = vec2(0,0);
+
+	vec3 p1 = position;
+	vec3 p2 = position + velocity*dt;
+
+	float Npoints = 10.;
+	float angle = 0.;
+	float deltaAngle = 2.*PI/Npoints;
+	vec3 p = vec3(0.);
+
+	//bottom
+	for (float angle=0; angle<=2.*PI; angle += deltaAngle){
+		gl_Position = uv_modelViewProjectionMatrix * vec4(p1, 1.);
+		EmitVertex();
+
+		p = vec3(p1.xyz + vec3(radius*cos(angle), radius*sin(angle), 0));
+		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
+		EmitVertex();
+
+	}
+
+	//side
+	for (float angle=0; angle<=2.*PI; angle += deltaAngle){
+		p = vec3(p1.xyz + vec3(radius*cos(angle), radius*sin(angle), 0));
+		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
+		EmitVertex();
+
+		p = vec3(p2.xyz + vec3(radius*cos(angle), radius*sin(angle), 0));
+		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
+		EmitVertex();
+	}
+
+	//top
+	for (float angle=0; angle<=2.*PI; angle += deltaAngle){
+		gl_Position = uv_modelViewProjectionMatrix * vec4(p2, 1.);
+		EmitVertex();
+
+		p = vec3(p2.xyz + vec3(radius*cos(angle), radius*sin(angle), 0.));
+		gl_Position = uv_modelViewProjectionMatrix * vec4(p, 1.);
+		EmitVertex();
+
+	}
+
+	EndPrimitive();
+
+
+}
+
+
 void main()
 {
 
 	velocityMag = gl_in[2].gl_Position.x;
+	colormapVar = gl_in[2].gl_Position.z; //log10(density)
 
 	vec3 pos = vec3(gl_in[0].gl_Position.x, gl_in[0].gl_Position.y, gl_in[0].gl_Position.z);
+	vec3 vel = vec3(gl_in[1].gl_Position.x, gl_in[1].gl_Position.y, gl_in[1].gl_Position.z);
 	mat3 rotX = rotationMatrix(vec3(1,0,0), userRotationX);
 	mat3 rotY = rotationMatrix(vec3(0,1,0), userRotationY);
 	mat3 rotZ = rotationMatrix(vec3(0,0,1), userRotationZ);
@@ -68,7 +128,13 @@ void main()
 	if (velocityMag >= vMax){
 		size = highVPsize;
 	}
-	drawSprite(vec4(rotX*rotY*rotZ*pos, 1.), size, 0);
+	if ((velocityMag < vMax && !useHighV) || (velocityMag > vMax && useHighV)){
+		if (doLine){
+			drawCylinder(rotX*rotY*rotZ*pos, rotX*rotY*rotZ*vel, size, highVdt);
+		} else {
+			drawSprite(vec4(rotX*rotY*rotZ*pos, 1.), size, 0);
+		}
+	}	
 	
 	
 
