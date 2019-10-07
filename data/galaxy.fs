@@ -1,4 +1,7 @@
 uniform float uv_fade;
+uniform mat4 uv_scene2ObjectMatrix;
+uniform vec4 uv_cameraPos;
+
 uniform float userAlpha;
 uniform float vMax;
 uniform float cmapMin;
@@ -7,7 +10,6 @@ uniform float highVAlpha;
 uniform bool doLine;
 
 uniform sampler2D cmap;
-
 
 in vec2 texcoord;
 in float velocityMag;
@@ -38,5 +40,8 @@ void main()
 			discard;
 		}
 	}
+
+	vec3 camPos = (uv_scene2ObjectMatrix*uv_cameraPos).xyz;
+	fragColor.a *= (1. - smoothstep(0., 0.8, clamp(length(camPos), 0.0, 0.1)));
 
 }
