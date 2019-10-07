@@ -21,7 +21,7 @@ void main()
 {
 
 	vec2 cPos = vec2( clamp((colormapVar - cmapMin)/(cmapMax - cmapMin), 0.01, 0.99), 0.5);
-    vec4 color = texture2D( cmap, cPos );
+	vec4 color = texture2D( cmap, cPos );
 
 	float alpha = userAlpha;
 	if (velocityMag >= vMax){
@@ -29,7 +29,6 @@ void main()
 		//color = vec4(1,0,0, 1.);
 	}
 	fragColor = vec4(color.rgb, 1.);
-	fragColor.a *= uv_fade*alpha;
 
 	if (!doLine){
 		vec2 fromCenter = texcoord * 2 - vec2(1);
@@ -42,6 +41,8 @@ void main()
 	}
 
 	vec3 camPos = (uv_scene2ObjectMatrix*uv_cameraPos).xyz;
-	fragColor.a *= (1. - smoothstep(0.8, 0.0, clamp(length(camPos), 0.0, 0.1)));
+	float alphaCam = clamp(1. - smoothstep(0.0, 1.0, (1. - clamp(length(camPos)/20., 0., 1.)) ), 0.2, 1.);
+	fragColor.a *= uv_fade*alpha*alphaCam;
 
 }
+
