@@ -42,6 +42,6 @@ void main()
 	}
 
 	vec3 camPos = (uv_scene2ObjectMatrix*uv_cameraPos).xyz;
-	fragColor.a *= (1. - smoothstep(0., 0.8, clamp(length(camPos), 0.0, 0.1)));
+	fragColor.a *= (1. - smoothstep(0.8, 0.0, clamp(length(camPos), 0.0, 0.1)));
 
 }
